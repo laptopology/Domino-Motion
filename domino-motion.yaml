@@ -23,3 +23,13 @@ wifi:
     ssid: "${name} Config"
     password: "12345678"
 captive_portal:
+
+# Components
+# PIR Motion sensor
+binary_sensor:
+  - platform: gpio
+    pin: GPIO17
+    name: "PIR Sensor"
+    device_class: motion
+    filters:
+      delayed_on_off: 5s
