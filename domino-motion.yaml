@@ -1,0 +1,25 @@
+# Adoptable Config
+substitutions:
+  name: "domino-motion"
+  friendly_name: "domino-motion"
+esphome:
+  name: "${name}"
+  friendly_name: "${friendly_name}"
+  # TRUE if using same firmware for other devices like this
+  name_add_mac_suffix: false
+  project:
+    name: "HomeConnected.Motion_Sensor_Plus"
+    version: "2024.25.4"
+esp8266:
+  board: d1_mini
+logger:
+api:
+ota:
+dashboard_import:
+  import_full_config: true
+  package_import_url: github://laptopology/Motion-Sensor/motion-sensor.yaml@main
+wifi:
+  ap:
+    ssid: "${name} Config"
+    password: "12345678"
+captive_portal:
