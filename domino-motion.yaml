@@ -32,4 +32,38 @@ binary_sensor:
     name: "PIR Sensor"
     device_class: motion
     filters:
-      delayed_on_off: 5s
+      - delayed_on: !lambda |-
+          return id(DELAY_ON).state;
+      - delayed_off: !lambda |-
+          return id(DELAY_OFF).state;
+
+# Dynamic adjustment
+number:
+  - platform: template
+    name: "Delay ON"
+    id: DELAY_ON
+    min_value: 1
+    max_value: 60
+    mode: slider
+    device_class: duration
+    entity_category: config
+    unit_of_measurement: s
+    icon: mdi:timer
+    step: 1
+    optimistic: True
+    initial_value: 5
+    restore_value: True
+  - platform: template
+    name: "Delay OFF"
+    id: DELAY_OFF
+    min_value: 5
+    max_value: 300
+    mode: slider
+    device_class: duration
+    entity_category: config
+    unit_of_measurement: s
+    icon: mdi:timer-off
+    step: 1
+    optimistic: True
+    initial_value: 5
+    restore_value: True
