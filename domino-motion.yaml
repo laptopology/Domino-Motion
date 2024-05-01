@@ -27,41 +27,56 @@ wifi:
 captive_portal:
 
 # Components
+
 # PIR Motion sensor
 binary_sensor:
-  - platform: gpio
-    pin: D1
-    name: "Motion Sensor"
+  - name: "Motion Sensor"
     device_class: motion
+    platform: gpio
+    pin:
+      number: D1
     filters:
       - delayed_on: !lambda |-
           return id(DELAY_ON).state * 1000;
       - delayed_off: !lambda |-
           return id(DELAY_OFF).state * 1000;
-  - platform: gpio
+
+# "ξηρή" επαφή, μαγνητάκι
+  - name: "Door Sensor"
+    device_class: door
+    platform: gpio    
     pin:
       number: D2
-      inverted: true
-    # "ξηρή" επαφή, μαγνητάκι
-    name: "Door Sensor"
-    device_class: door
+      mode: 
+        pullup: True
+        input: True
     filters: 
-      - delayed_on_off: 10s
-  - platform: gpio
+      - delayed_on_off: !lambda |-
+          return id(DOOR_DELAY).state * 1000;
+
+# LB ένδειξη χαμηλής μπαταρίας, δεν ξέρω τι τάση βγάζει αυτό,
+# αν η τάση που βγάζει αυτό είναι 12v τότε πρέπει να πέσει στα 3 (devider?),
+# δε νομίζω να είναι "ξηρή επαφή" αλλιώς πρέπει να βάλουμε 2 ρελέ
+  - name: "Battery Low" #  or Siren Input lower than 10.5v for some reason
+    icon: mdi:car-battery
+    platform: gpio
     pin:
       number: D6
-      inverted: true
-    # LB ένδειξη χαμηλής μπαταρίας, δεν ξέρω τι τάση βγάζει αυτό, αν η τάση που βγάζει αυτό είναι 12v τότε πρέπει να πέσει στα 3 (devider?), δε νομίζω να είναι "ξηρή επαφή" αλλιώς πρέπει να βάλουμε 2 ρελέ
-    name: "Battery Low" #  or Input lower than 10.5v
-    icon: mdi:car-battery
-  - platform: gpio
+      mode:
+        input: True
+        pullup: True
+
+# ALARM VER η σειρήνα δίνει συναγερμό στο κέντρο λόγο ενεργοποίησης μεγαφώνου από οποιαδήποτε αιτία,
+# αν η τάση που βγάζει αυτό είναι 12v τότε πρέπει να πέσει στα 3 (devider?)
+  - name: "Alarm OUT"
+    platform: gpio
+    icon: mdi:bell-badge-outline
     pin:
       number: D5
-      inverted: true
-    # ALARM VER η σειρήνα δίνει συναγερμό στο κέντρο λόγο ενεργοποίησης μεγαφώνου από οποιαδήποτε αιτία, αν η τάση που βγάζει αυτό είναι 12v τότε πρέπει να πέσει στα 3 (devider?)
-    name: "Alarm OUT"
-    icon: mdi:bell-badge-outline
-
+      mode: 
+        input: True
+        pullup: True
+    
 # Dynamic adjustment
 number:
   - platform: template
@@ -92,16 +107,36 @@ number:
     optimistic: True
     initial_value: 5
     restore_value: True
+  - platform: template
+    name: "Door Delay"
+    id: DOOR_DELAY
+    min_value: 1
+    max_value: 30
+    mode: slider
+    device_class: duration
+    entity_category: config
+    unit_of_measurement: s
+    icon: mdi:timer-outline
+    step: 1
+    optimistic: True
+    initial_value: 2
+    restore_value: True
 
 switch:
   # χρειαζόμαστε 2 dry-contact relays για να δώσουμε 12v στις εισόδους της σειρήνας ή εναλλακτικά 3.3->12v logic level shifters
   - platform: gpio
-    pin: D8
+    pin:
+      number: RX
+      inverted: True
     # IN ενεργοποίηση σειρήνας από τον συναγερμό, εμφανίζονται 12v και ηχεί το μεγάφωνο
     name: "Alarm IN"
     icon: mdi:bullhorn-outline
+    
   - platform: gpio
-    pin: D7
+    pin:
+      number: D7
+      inverted: True
     # TC ενεργοποήση κατάστασης συντήρισης για 10 λεπτά όπου πρέπει να ανοίξει το καπάκι
     name: "Service Mode"
     icon: mdi:account-wrench-outline
+    restore_mode: ALWAYS_OFF
