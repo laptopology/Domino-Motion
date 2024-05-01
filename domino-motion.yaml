@@ -35,22 +35,32 @@ binary_sensor:
     device_class: motion
     filters:
       - delayed_on: !lambda |-
-          return id(DELAY_ON).state;
+          return id(DELAY_ON).state * 1000;
       - delayed_off: !lambda |-
-          return id(DELAY_OFF).state;
+          return id(DELAY_OFF).state * 1000;
   - platform: gpio
-    pin: D2
+    pin:
+      number: D2
+      inverted: true
     # "ξηρή" επαφή, μαγνητάκι
     name: "Door Sensor"
     device_class: door
+    filters: 
+      - delayed_on_off: 10s
   - platform: gpio
-    pin: D6 # GPIO12
+    pin:
+      number: D6
+      inverted: true
     # LB ένδειξη χαμηλής μπαταρίας, δεν ξέρω τι τάση βγάζει αυτό, αν η τάση που βγάζει αυτό είναι 12v τότε πρέπει να πέσει στα 3 (devider?), δε νομίζω να είναι "ξηρή επαφή" αλλιώς πρέπει να βάλουμε 2 ρελέ
     name: "Battery Low" #  or Input lower than 10.5v
+    icon: mdi:car-battery
   - platform: gpio
-    pin: D5 # GPIO12
+    pin:
+      number: D5
+      inverted: true
     # ALARM VER η σειρήνα δίνει συναγερμό στο κέντρο λόγο ενεργοποίησης μεγαφώνου από οποιαδήποτε αιτία, αν η τάση που βγάζει αυτό είναι 12v τότε πρέπει να πέσει στα 3 (devider?)
     name: "Alarm OUT"
+    icon: mdi:bell-badge-outline
 
 # Dynamic adjustment
 number:
@@ -58,7 +68,7 @@ number:
     name: "Delay ON"
     id: DELAY_ON
     min_value: 1
-    max_value: 60
+    max_value: 10
     mode: slider
     device_class: duration
     entity_category: config
@@ -66,13 +76,13 @@ number:
     icon: mdi:timer
     step: 1
     optimistic: True
-    initial_value: 5
+    initial_value: 2
     restore_value: True
   - platform: template
     name: "Delay OFF"
     id: DELAY_OFF
-    min_value: 5
-    max_value: 300
+    min_value: 1
+    max_value: 30
     mode: slider
     device_class: duration
     entity_category: config
@@ -84,12 +94,14 @@ number:
     restore_value: True
 
 switch:
-  # χρειαζόμαστε 2 dry-contact relays για να δώσουμε 12v στις εισόδους της σειρήνας
+  # χρειαζόμαστε 2 dry-contact relays για να δώσουμε 12v στις εισόδους της σειρήνας ή εναλλακτικά 3.3->12v logic level shifters
   - platform: gpio
-    pin: D8 # GPIO12
+    pin: D8
     # IN ενεργοποίηση σειρήνας από τον συναγερμό, εμφανίζονται 12v και ηχεί το μεγάφωνο
-    name: "Alarm IN" #relay 1
+    name: "Alarm IN"
+    icon: mdi:bullhorn-outline
   - platform: gpio
-    pin: D7 # GPIO12
+    pin: D7
     # TC ενεργοποήση κατάστασης συντήρισης για 10 λεπτά όπου πρέπει να ανοίξει το καπάκι
-    name: "Service Mode" #relay 2
+    name: "Service Mode"
+    icon: mdi:account-wrench-outline
