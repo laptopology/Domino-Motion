@@ -28,13 +28,13 @@ captive_portal:
 
 # Components
 
-# PIR Motion sensor
+# PIR Motion sensor (internal)
 binary_sensor:
   - name: "Motion Sensor"
-    device_class: motion
     platform: gpio
     pin:
       number: D1
+    device_class: motion
     filters:
       - delayed_on: !lambda |-
           return id(DELAY_ON).state * 1000;
@@ -43,39 +43,35 @@ binary_sensor:
 
 # "ξηρή" επαφή, μαγνητάκι
   - name: "Door Sensor"
-    device_class: door
-    platform: gpio    
+   platform: gpio
     pin:
       number: D2
+      #inverted: true
       mode: 
         pullup: True
         input: True
+    device_class: door
     filters: 
       - delayed_on_off: !lambda |-
           return id(DOOR_DELAY).state * 1000;
 
-# LB ένδειξη χαμηλής μπαταρίας, δεν ξέρω τι τάση βγάζει αυτό,
-# αν η τάση που βγάζει αυτό είναι 12v τότε πρέπει να πέσει στα 3 (devider?),
-# δε νομίζω να είναι "ξηρή επαφή" αλλιώς πρέπει να βάλουμε 2 ρελέ
-  - name: "Battery Low" #  or Siren Input lower than 10.5v for some reason
+# LB ένδειξη χαμηλής μπαταρίας, ρελέ
+  - name: "Battery Low" #  or Input lower than 10.5v
     icon: mdi:car-battery
     platform: gpio
     pin:
       number: D6
-      mode:
-        input: True
-        pullup: True
+      inverted: true   
 
-# ALARM VER η σειρήνα δίνει συναγερμό στο κέντρο λόγο ενεργοποίησης μεγαφώνου από οποιαδήποτε αιτία,
-# αν η τάση που βγάζει αυτό είναι 12v τότε πρέπει να πέσει στα 3 (devider?)
+# ALARM VER η σειρήνα δίνει συναγερμό στο κέντρο λόγο ενεργοποίησης μεγαφώνου από οποιαδήποτε αιτία, relay
   - name: "Alarm OUT"
     platform: gpio
     icon: mdi:bell-badge-outline
     pin:
       number: D5
+      #inverted: False
       mode: 
         input: True
-        pullup: True
     
 # Dynamic adjustment
 number:
@@ -124,19 +120,19 @@ number:
 
 switch:
   # χρειαζόμαστε 2 dry-contact relays για να δώσουμε 12v στις εισόδους της σειρήνας ή εναλλακτικά 3.3->12v logic level shifters
-  - platform: gpio
+  - name: "Alarm IN"
+    platform: gpio
     pin:
       number: RX
       inverted: True
     # IN ενεργοποίηση σειρήνας από τον συναγερμό, εμφανίζονται 12v και ηχεί το μεγάφωνο
-    name: "Alarm IN"
     icon: mdi:bullhorn-outline
     
-  - platform: gpio
+# TC ενεργοποήση κατάστασης συντήρισης για 10 λεπτά όπου πρέπει να ανοίξει το καπάκι
+  - name: "Service Mode"
+    platform: gpio
     pin:
       number: D7
       inverted: True
-    # TC ενεργοποήση κατάστασης συντήρισης για 10 λεπτά όπου πρέπει να ανοίξει το καπάκι
-    name: "Service Mode"
     icon: mdi:account-wrench-outline
     restore_mode: ALWAYS_OFF
