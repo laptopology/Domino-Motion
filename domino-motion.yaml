@@ -43,7 +43,7 @@ binary_sensor:
 
 # "ξηρή" επαφή, μαγνητάκι
   - name: "Door Sensor"
-   platform: gpio
+    platform: gpio
     pin:
       number: D2
       #inverted: true
@@ -136,3 +136,24 @@ switch:
       inverted: True
     icon: mdi:account-wrench-outline
     restore_mode: ALWAYS_OFF
+
+sensor:
+  - platform: adc
+    pin: A0
+    name: "Battery Voltage"
+    update_interval: 10s
+    filters:
+      # Map 0.0 (from sensor) to 0.0 (true value)
+      # 12.74 stin mpataria einai 2.51 ston devider
+      #- calibrate_linear:
+      #  - 0.41 -> 6.00
+      #  - 0.48 -> 7.00
+      #  - 0.54 -> 8.00
+      #  - 0.61 -> 9.00
+      #  - 0.68 -> 10.00
+      #  - 0.75 -> 11.00
+      #  - 0.81 -> 12.00
+      #  - 0.88 -> 13.00
+      #  - 0.94 -> 13.99
+      #  - 0.99 -> 14.70
+      
