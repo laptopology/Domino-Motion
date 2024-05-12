@@ -64,6 +64,7 @@ binary_sensor:
       mode: 
         pullup: True
         input: True
+      inverted: True
 
 # ALARM VER η σειρήνα δίνει συναγερμό στο κέντρο λόγο ενεργοποίησης μεγαφώνου από (εσωτερική) οποιαδήποτε αιτία
   - name: "Alarm OUT"
@@ -74,7 +75,7 @@ binary_sensor:
       mode: 
         pullup: True
         input: True
-    
+      inverted: True
 switch:
   # το κέντρο δίνει συναγερμό ...IN ενεργοποίηση σειρήνας από τον συναγερμό, εμφανίζονται 12v και ηχεί το μεγάφωνο
   - name: "Alarm IN"
