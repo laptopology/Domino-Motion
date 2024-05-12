@@ -1,4 +1,4 @@
-# Η συσκευή είναι ρυθμιζόμενος αισθητήρας κίνησης, ελέγχει την σειρήνα (in/out/battery/service) και την πόρτα (door open/close)
+# Η συσκευή είναι ρυθμιζόμενος αισθητήρας κίνησης (motion), ελέγχει την σειρήνα (in/out/battery/service/volts) και την πόρτα (door open/close)
 
 # Adoptable Config
 substitutions:
@@ -55,25 +55,54 @@ binary_sensor:
       - delayed_on_off: !lambda |-
           return id(DOOR_DELAY).state * 1000;
 
-# LB ένδειξη χαμηλής μπαταρίας, ρελέ
-  - name: "Battery Low" #  or Input lower than 10.5v
+# LB ένδειξη χαμηλής μπαταρίας or Input lower than 10.5v
+  - name: "Battery Low"
     icon: mdi:car-battery
     platform: gpio
     pin:
       number: D6
-      inverted: true   
+      mode: 
+        pullup: True
+        input: True
 
-# ALARM VER η σειρήνα δίνει συναγερμό στο κέντρο λόγο ενεργοποίησης μεγαφώνου από οποιαδήποτε αιτία, relay
+# ALARM VER η σειρήνα δίνει συναγερμό στο κέντρο λόγο ενεργοποίησης μεγαφώνου από (εσωτερική) οποιαδήποτε αιτία
   - name: "Alarm OUT"
-    platform: gpio
     icon: mdi:bell-badge-outline
+    platform: gpio
     pin:
       number: D5
-      #inverted: False
       mode: 
+        pullup: True
         input: True
     
-# Dynamic adjustment
+switch:
+  # το κέντρο δίνει συναγερμό ...IN ενεργοποίηση σειρήνας από τον συναγερμό, εμφανίζονται 12v και ηχεί το μεγάφωνο
+  - name: "Alarm IN"
+    icon: mdi:bullhorn-outline
+    platform: gpio
+    pin:
+      number: RX
+      inverted: True
+    
+# TC ενεργοποήση κατάστασης συντήρισης για 10 λεπτά όπου πρέπει να ανοίξει το καπάκι να αλλαχθεί η μπαταρία και να κλείσει, μετά reset
+  - name: "Service Mode"
+    icon: mdi:account-wrench-outline
+    platform: gpio
+    pin:
+      number: D7
+      inverted: True
+
+sensor:
+  - name: "Battery Voltage"
+    platform: adc
+    pin: A0
+    update_interval: 60s
+    filters:
+      - calibrate_linear:
+         - 0.0 -> 0.0
+         - 0.81 -> 12.74
+
+# Dynamic adjustment of motion and door delay
 number:
   - platform: template
     name: "Delay ON"
@@ -117,43 +146,3 @@ number:
     optimistic: True
     initial_value: 2
     restore_value: True
-
-switch:
-  # χρειαζόμαστε 2 dry-contact relays για να δώσουμε 12v στις εισόδους της σειρήνας ή εναλλακτικά 3.3->12v logic level shifters
-  - name: "Alarm IN"
-    platform: gpio
-    pin:
-      number: RX
-      inverted: True
-    # IN ενεργοποίηση σειρήνας από τον συναγερμό, εμφανίζονται 12v και ηχεί το μεγάφωνο
-    icon: mdi:bullhorn-outline
-    
-# TC ενεργοποήση κατάστασης συντήρισης για 10 λεπτά όπου πρέπει να ανοίξει το καπάκι
-  - name: "Service Mode"
-    platform: gpio
-    pin:
-      number: D7
-      inverted: True
-    icon: mdi:account-wrench-outline
-    restore_mode: ALWAYS_OFF
-
-sensor:
-  - platform: adc
-    pin: A0
-    name: "Battery Voltage"
-    update_interval: 10s
-    filters:
-      # Map 0.0 (from sensor) to 0.0 (true value)
-      # 12.74 stin mpataria einai 2.51 ston devider
-      #- calibrate_linear:
-      #  - 0.41 -> 6.00
-      #  - 0.48 -> 7.00
-      #  - 0.54 -> 8.00
-      #  - 0.61 -> 9.00
-      #  - 0.68 -> 10.00
-      #  - 0.75 -> 11.00
-      #  - 0.81 -> 12.00
-      #  - 0.88 -> 13.00
-      #  - 0.94 -> 13.99
-      #  - 0.99 -> 14.70
-      
